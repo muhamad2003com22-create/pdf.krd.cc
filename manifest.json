@@ -1,0 +1,24 @@
+{
+  "name": "PDF.KRD - پلاتفۆرمی گۆڕینی فایلەکان",
+  "short_name": "PDF.KRD",
+  "description": "ئامرازە بەهێزەکانی گۆڕینی فایلی PDF، وێنە، دەنگ و ڤیدیۆ بە خۆڕایی",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF6600",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

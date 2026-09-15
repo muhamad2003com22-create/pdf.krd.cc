@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PDF.KRD - بەهێزترین ئامرازەکانی گۆڕینی فایل بە خۆڕایی</title>
+  
+  <!-- PWA & Mobile WebApp Meta Tags -->
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF6600">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PDF.KRD">
+
+  <!-- Fonts: Vazirmatn for Kurdish, Inter for English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="bg-decor"></div>
+
+  <div class="content-wrapper">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <div class="container nav-container">
+        <a href="/" class="brand-logo">
+          <div class="logo-avatar-wrap">
+            <img src="images/logo.png" alt="PDF.KRD Logo" class="brand-avatar-img">
+          </div>
+          <div class="brand-title" data-i18n="brandTitle">PDF<span>.KRD</span></div>
+        </a>
+
+        <div class="nav-actions">
+          <a href="https://t.me/IT_Kurd0" target="_blank" rel="noopener noreferrer" class="btn-nav btn-telegram-nav" title="Telegram Channel">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+            <span class="nav-telegram-text">Telegram</span>
+          </a>
+          <button id="lang-toggle-btn" class="btn-nav btn-nav-primary">English</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span data-i18n="badgeFree">١٠٠٪ خۆڕایی بێ سنوور</span>
+        </div>
+        <h1 class="hero-title" data-i18n="tagline">بەهێزترین و خێراترین ئامرازەکانی گۆڕینی فایل بە خۆڕایی</h1>
+        <p class="hero-subtitle" data-i18n="subtagline">
+          گۆڕینی فایلی PDF، وێنە، دەنگ و ڤیدیۆ بە یەک کلیک بە شێوەیەکی خێرا، پارێزراو و بە تەواوی خۆڕایی.
+        </p>
+
+        <!-- Feature Pills -->
+        <div class="features-pills">
+          <div class="pill-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span data-i18n="pillFree">خۆڕایی و بێ سنوور</span>
+          </div>
+          <div class="pill-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span data-i18n="pillPrivacy">پارێزراوی تەواوی فایلەکان</span>
+          </div>
+          <div class="pill-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span data-i18n="pillQuality">کوالێتی و ڕوونی بەرز</span>
+          </div>
+          <div class="pill-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span data-i18n="pillSpeed">خێرایی سەروو ئاسایی</span>
+          </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="tabs-wrapper">
+          <div class="tabs-list">
+            <button class="tab-btn active" data-category="all" data-i18n="tabAll">هەموو ئامرازەکان (١٢)</button>
+            <button class="tab-btn" data-category="pdf" data-i18n="tabPdf">ئامرازەکانی PDF</button>
+            <button class="tab-btn" data-category="image" data-i18n="tabImage">ئامرازەکانی وێنە</button>
+            <button class="tab-btn" data-category="media" data-i18n="tabMedia">دەنگ و ڤیدیۆ</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tools Grid Section -->
+      <section id="tools-section">
+        <div id="tools-grid" class="tools-grid">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- Developer API Documentation Section -->
+      <section id="api-section" class="api-section">
+        <div class="api-card">
+          <h2 class="api-card-title">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            <span data-i18n="apiTitle">بەڵگەنامەی APIـی کراوە بۆ گەشەپێدەران</span>
+          </h2>
+          <p class="api-card-desc" data-i18n="apiDesc">
+            دەتوانیت سەرجەم ئەم ئامرازانە لە ناو ئەپڵیکەیشن، مۆبایل ئەپ، یان ماڵپەڕەکەت بەکاربهێنیت بەبێ پارەدان.
+          </p>
+
+          <!-- API Key Generator Card -->
+          <div class="api-key-generator-card">
+            <div class="key-gen-header">
+              <div class="key-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="key-gen-title" data-i18n="keyGenTitle">دروستکردنی کلیلی بێبەرامبەری API (Free API Key)</h3>
+                <p class="key-gen-desc" data-i18n="keyGenDesc">ناوی ئەپ یان پڕۆژەکەت بنووسە بۆ بەدەستهێنانی کلیلی تایبەت بە خۆت دەستبەجێ:</p>
+              </div>
+            </div>
+            
+            <div class="key-gen-form">
+              <input type="text" id="api-key-name-input" class="key-input" placeholder="ناوی پڕۆژە (نموونە: My Mobile App)" />
+              <button type="button" class="btn-download" style="padding: 10px 22px; font-size: 14px;" onclick="generateUserApiKey()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span data-i18n="btnGenerateKey">دروستکردنی کلیل</span>
+              </button>
+            </div>
+
+            <div id="generated-key-box" class="generated-key-box" style="display: none;">
+              <div class="generated-key-info">
+                <span class="key-badge">Active Key</span>
+                <code id="display-api-key" class="display-api-key">krd_live_...</code>
+              </div>
+              <button class="btn-secondary-action" style="padding: 8px 16px; font-size: 13px;" onclick="copyGeneratedKey()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span data-i18n="copyBtn">کۆپیکردن</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Code snippets switcher -->
+          <div class="code-tabs">
+            <button class="code-tab-btn active" id="tab-btn-curl" onclick="switchCodeTab('curl')">cURL</button>
+            <button class="code-tab-btn" id="tab-btn-python" onclick="switchCodeTab('python')">Python</button>
+            <button class="code-tab-btn" id="tab-btn-js" onclick="switchCodeTab('js')">JavaScript</button>
+          </div>
+
+          <div class="code-block-wrapper">
+            <button class="btn-copy-code" onclick="copyActiveCode()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span data-i18n="copyBtn">کۆپیکردن</span>
+            </button>
+            <div id="code-wrapper-curl" class="code-content" style="display: block;">
+              <pre class="code-block"><code id="code-curl"></code></pre>
+            </div>
+            <div id="code-wrapper-python" class="code-content" style="display: none;">
+              <pre class="code-block"><code id="code-python"></code></pre>
+            </div>
+            <div id="code-wrapper-js" class="code-content" style="display: none;">
+              <pre class="code-block"><code id="code-js"></code></pre>
+            </div>
+          </div>
+
+          <div style="margin-top: 28px;">
+            <a href="/docs" target="_blank" class="btn-download" style="display: inline-flex; font-size: 14px; padding: 10px 22px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              <span data-i18n="apiSwaggerLink">بینینی تەواوی دۆکیومێنتی Swagger UI</span>
+            </a>
+          </div>
+
+          <!-- Endpoints Table -->
+          <div class="api-table-wrapper">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>ئامراز (Tool)</th>
+                  <th>Parameters</th>
+                </tr>
+              </thead>
+              <tbody id="api-table-body">
+                <!-- Rendered by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <!-- Telegram Channel Banner -->
+      <section class="telegram-banner-section">
+        <div class="telegram-banner-card">
+          <div class="telegram-brand-info">
+            <div class="telegram-logo-wrapper">
+              <img src="images/logo.png" alt="Channel Logo" class="telegram-avatar" />
+              <div class="telegram-badge-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="telegram-text-details">
+              <div class="telegram-channel-title">“Course,, technology” <span class="telegram-badge-subscribers">1,070+ ئەندام</span></div>
+              <h3 class="telegram-main-notice" data-i18n="telegramNotice">بۆ زانیاریی زیاتر، سەردانی تێلیگرام بکەن.</h3>
+              <p class="telegram-channel-bio">فێرکاری بواری IT، دیزاین، ئێکسڵ، مایکرۆسۆفت وۆرد، و چارەسەرکردنی کێشەکان.</p>
+            </div>
+          </div>
+          <a href="https://t.me/IT_Kurd0" target="_blank" rel="noopener noreferrer" class="btn-telegram-visit">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+            <span data-i18n="telegramBtn">سەردانی تێلیگرام بکە (t.me/IT_Kurd0)</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-content">
+        <div class="footer-logo">
+          <img src="images/logo.png" alt="PDF.KRD" class="footer-avatar-img">
+          <span>PDF.KRD</span>
+        </div>
+        <p class="footer-telegram-note">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0088cc" style="vertical-align: middle; margin-left: 4px;">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+          <span data-i18n="telegramNotice">بۆ زانیاریی زیاتر، سەردانی تێلیگرام بکەن:</span>
+          <a href="https://t.me/IT_Kurd0" target="_blank" rel="noopener noreferrer" style="color: #0088cc; font-weight: 700; text-decoration: none;">t.me/IT_Kurd0</a>
+        </p>
+        <p class="footer-text" data-i18n="footerText">
+          سەرجەم مافەکان پارێزراون © PDF.KRD - خزمەتگوزاری خۆڕایی گۆڕینی فایل بە تەکنەلۆژیای سەردەم.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Floating Telegram Button for Mobile / WebApp -->
+  <a href="https://t.me/IT_Kurd0" target="_blank" rel="noopener noreferrer" class="floating-telegram-btn" title="Telegram Channel">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+    </svg>
+    <span class="floating-tg-text">تێلیگرام</span>
+  </a>
+
+  <!-- Interactive Conversion Modal -->
+  <div id="conversion-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div id="modal-icon" class="modal-title-icon"></div>
+          <h2 id="modal-title" class="modal-title"></h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeConversionModal()" title="Close">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Hidden file input -->
+        <input type="file" id="file-input" style="display: none;">
+
+        <!-- Dropzone -->
+        <div id="dropzone-container" class="dropzone">
+          <div class="dropzone-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <h3 class="dropzone-title" data-i18n="dropzoneTitle">فایلەکەت لێرە دابنێ یان کلیک بکە</h3>
+          <p class="dropzone-desc">
+            <span data-i18n="dropzoneDesc">فایلە ڕێپێدراوەکان: </span>
+            <strong id="dropzone-accept-text" style="color: var(--primary);"></strong>
+          </p>
+          <button class="dropzone-btn" type="button" data-i18n="btnSelectFile">فایل هەڵبژێرە</button>
+        </div>
+
+        <!-- Selected File Preview Box -->
+        <div id="selected-file-box" class="selected-file-box" style="display: none;">
+          <div class="file-details">
+            <div class="file-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="file-info">
+              <div id="file-name-display" class="file-name">filename.ext</div>
+              <div id="file-size-display" class="file-size">0 KB</div>
+            </div>
+          </div>
+          <button class="btn-remove-file" onclick="removeSelectedFile()" title="Remove file">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Progress Box -->
+        <div id="progress-box" class="progress-box">
+          <div class="progress-header">
+            <span id="progress-status" data-i18n="converting">فایلەکەت لە پرۆسەی گۆڕیندایە...</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Result Box -->
+        <div id="result-box" class="result-box">
+          <div class="result-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="result-title" data-i18n="completed">فایلەکەت بە سەرکەوتوویی ئامادە کرا!</div>
+          <div class="result-actions">
+            <button id="btn-download-result" class="btn-download">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span data-i18n="downloadBtn">داگرتنی فایلەکە</span>
+            </button>
+            <button class="btn-secondary-action" onclick="resetModalForNewFile()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+              <span data-i18n="convertAnother">گۆڕینی فایلی تر</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Convert Action Button -->
+        <div style="margin-top: 24px; text-align: center;">
+          <button id="start-convert-btn" class="btn-download" style="display: none; width: 100%; justify-content: center;" onclick="startConversion()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14"/>
+              <path d="M12 5l7 7-7 7"/>
+            </svg>
+            <span data-i18n="btnConvertNow">گۆڕینی فایل</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Client-Side Conversion Libraries for Cloudflare Pages / Offline -->
+  <script src="libs/pdf.min.js"></script>
+  <script src="libs/jspdf.umd.min.js"></script>
+  <script src="libs/jszip.min.js"></script>
+  <script src="libs/mammoth.browser.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
