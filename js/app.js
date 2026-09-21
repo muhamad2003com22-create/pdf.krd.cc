@@ -132,6 +132,20 @@ const TOOLS_DATA = [
     endpoint: "/api/convert/jpg-to-webp",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
   },
+  {
+    id: "png-to-ico",
+    category: "image",
+    nameKu: "PNG بۆ ICO (ئایکۆنی لۆگۆ)",
+    nameEn: "PNG to ICO (Logo Icon)",
+    descKu: "گۆڕینی وێنە و لۆگۆی PNG بۆ فایلی ئایکۆنی (.ico) بۆ ماڵپەڕ (Favicon) و بەرنامەکان.",
+    descEn: "Convert PNG & JPG logos into Windows ICO and website Favicon formats.",
+    badgeKu: "بۆ لۆگۆ",
+    badgeEn: "For Logo",
+    accept: ".png,.jpg,.jpeg,.webp",
+    multiple: false,
+    endpoint: "/api/convert/png-to-ico",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`
+  },
 
   // Media Tools
   {
@@ -560,7 +574,8 @@ async function convertWithCloudConvert(toolId, file, onProgress) {
     "jpg-to-png": { input: "jpg", output: "png" },
     "png-to-jpg": { input: "png", output: "jpg" },
     "webp-to-jpg": { input: "webp", output: "jpg" },
-    "jpg-to-webp": { input: "jpg", output: "webp" }
+    "jpg-to-webp": { input: "jpg", output: "webp" },
+    "png-to-ico": { input: "png", output: "ico" }
   };
 
   const fmt = formatMap[toolId];
@@ -572,6 +587,9 @@ async function convertWithCloudConvert(toolId, file, onProgress) {
   if (toolId === "word-to-pdf") {
     const ext = file.name.split('.').pop().toLowerCase();
     if (ext === "doc") inputFormat = "doc";
+  } else if (toolId === "png-to-ico") {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === "jpg" || ext === "jpeg" || ext === "webp") inputFormat = ext;
   }
 
   if (onProgress) onProgress(currentLang === "ku" ? "پەیوەندیکردن بە CloudConvert..." : "Connecting to CloudConvert API...");
@@ -682,6 +700,10 @@ async function convertClientSide(toolId, files) {
   if (toolId === "jpg-to-webp") {
     const blob = await convertImageToFormat(file, "image/webp", 0.9);
     return { blob, filename: `${baseName}.webp` };
+  }
+  if (toolId === "png-to-ico") {
+    const icoBlob = await convertImageToIco(file);
+    return { blob: icoBlob, filename: `${baseName}.ico` };
   }
 
   // 2. JPG to PDF
@@ -1076,6 +1098,50 @@ function convertImageToFormat(file, mime, quality = 0.92, whiteBg = false) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+async function convertImageToIco(file) {
+  const imgDataUrl = await readFileAsDataURL(file);
+  const img = await new Promise((res, rej) => {
+    const image = new Image();
+    image.onload = () => res(image);
+    image.onerror = rej;
+    image.src = imgDataUrl;
+  });
+
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, size, size);
+
+  const pngBlob = await new Promise(r => canvas.toBlob(r, "image/png"));
+  const pngBuffer = await pngBlob.arrayBuffer();
+  const pngBytes = new Uint8Array(pngBuffer);
+
+  const icoBuffer = new ArrayBuffer(22 + pngBytes.length);
+  const view = new DataView(icoBuffer);
+
+  // ICO Header (6 bytes)
+  view.setUint16(0, 0, true);
+  view.setUint16(2, 1, true);
+  view.setUint16(4, 1, true);
+
+  // Directory Entry (16 bytes)
+  view.setUint8(6, 0); // 0 means 256px
+  view.setUint8(7, 0); // 0 means 256px
+  view.setUint8(8, 0);
+  view.setUint8(9, 0);
+  view.setUint16(10, 1, true); // Planes
+  view.setUint16(12, 32, true); // 32 bits RGBA
+  view.setUint32(14, pngBytes.length, true);
+  view.setUint32(18, 22, true); // Offset 22
+
+  const icoBytes = new Uint8Array(icoBuffer);
+  icoBytes.set(pngBytes, 22);
+
+  return new Blob([icoBytes], { type: "image/x-icon" });
 }
 
 function readFileAsDataURL(file) {
