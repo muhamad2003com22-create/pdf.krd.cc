@@ -1,5 +1,5 @@
 // PDF.KRD Service Worker for WebApp / PWA
-const CACHE_NAME = 'pdf-krd-v7';
+const CACHE_NAME = 'pdf-krd-v8';
 const ASSETS_TO_CACHE = [
   './',
   'css/style.css',

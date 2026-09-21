@@ -491,10 +491,25 @@ async function startConversion() {
         }
       }
     } catch (netErr) {
-      console.log("Server API not reachable, switching to client-side engine:", netErr);
+      console.log("Server API not reachable:", netErr);
     }
 
-    // 2. If backend not running (e.g. on Cloudflare Pages static), convert directly in browser!
+    // 2. Try CloudConvert Enterprise API (Highest Quality for Kurdish/Office files)
+    if (!blob && selectedFiles.length === 1) {
+      try {
+        const ccRes = await convertWithCloudConvert(currentTool.id, selectedFiles[0], (msg) => {
+          progressStatus.textContent = msg;
+        });
+        if (ccRes && ccRes.blob) {
+          blob = ccRes.blob;
+          convertedFilename = ccRes.filename;
+        }
+      } catch (ccErr) {
+        console.warn("CloudConvert API unavailable, falling back to browser engine:", ccErr);
+      }
+    }
+
+    // 3. If CloudConvert not used or failed, convert directly in browser!
     if (!blob) {
       progressStatus.textContent = currentLang === "ku" ? "گۆڕین لە ڕێگەی براوسەرەوە..." : "Converting in browser...";
       const clientRes = await convertClientSide(currentTool.id, selectedFiles);
@@ -530,6 +545,124 @@ async function startConversion() {
     convertBtn.style.display = "inline-flex";
     showToast(error.message || "هەڵەیەک لە گۆڕیندا ڕوویدا");
   }
+}
+
+// CloudConvert API Integration (Enterprise Conversion Engine)
+const CLOUDCONVERT_API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOWZlNTJmOGZjOWZjNzRjMTY1NWEwM2RhMWJiMzM4YTFkNzM1NTQ2ODM3NmJjN2YyODNiZjc3NjRkYzZhNjczZDQxMTE1ZTYxYjVkZTEzNjgiLCJpYXQiOjE3OTAwMDcwNjIuNjI3OTM3LCJuYmYiOjE3OTAwMDcwNjIuNjI3OTM5LCJleHAiOjQ5NDU2ODA2NjIuNjE0MDI2LCJzdWIiOiI3NTc4NDQ2OCIsInNjb3BlcyI6WyJ1c2VyLnJlYWQiLCJ0YXNrLnJlYWQiLCJ0YXNrLndyaXRlIl19.LAfhZnsMsOt91aUNcce1xjWTPlUGtqZxKQGrCAc5NzKCSMb6KVL5qqlJpl22G9QAlbKql6guq3kAi6AnoDGdYzAHjnOoK-cnS4jJKkjpyedmLkOnZk0bweId2Vxa9J45_z5v-X-A-32Lh_n50Wi2nCY9XqZLjSTEhw4yLWBvpB9Z67c5rHxIWt52DJMhiQdV5bsd5lLBW0DK32k5P8ZFrLoev5lCQYKZBOPDqaiILHW-9p-gEMZauPIFkJDj8RYftB_kTy_BiIiYx7whWPISfOX9nAV54ry8oaPd9swMCEOrGMIpb7D66jAIn10-3Ep_Ml4K3ZAVoIStOjmMNvfV0SWu9fGuCceUb6_jSp5mY29sPT__qfOJ7xrN_zJQFF_oV_BkwKfEhEiSyuBaYNyhx9bxBV3LDpalnPUbau0xX0ZHe7cBT0jsBxHO174VJ1ST7hUFVpJK5fQnfa5gDd9nxR71S8liywCW1ZYKPgx_SReQ3EEaemLm2Z42dgoYAlngANsHivslZuq1vn0mXsbrfGWpOdkILnYbVbv30cUxrtS8fOOcwa3C3iA26tvZbpW2ac23CI5-toESpuPBU1KVQAJJPbzLPtMGiTiof41wNNBrTm5xmgmNfxF7UZJcB0IHMqRIBqBbApDZ-V5mOc5Ydz91Mm-kUGGIVgkrvNVaAwI";
+
+async function convertWithCloudConvert(toolId, file, onProgress) {
+  const formatMap = {
+    "pdf-to-word": { input: "pdf", output: "docx" },
+    "word-to-pdf": { input: "docx", output: "pdf" },
+    "jpg-to-pdf": { input: "jpg", output: "pdf" },
+    "pdf-to-jpg": { input: "pdf", output: "jpg" },
+    "pdf-to-png": { input: "pdf", output: "png" },
+    "jpg-to-png": { input: "jpg", output: "png" },
+    "png-to-jpg": { input: "png", output: "jpg" },
+    "webp-to-jpg": { input: "webp", output: "jpg" },
+    "jpg-to-webp": { input: "jpg", output: "webp" }
+  };
+
+  const fmt = formatMap[toolId];
+  if (!fmt || !CLOUDCONVERT_API_KEY) {
+    return null;
+  }
+
+  let inputFormat = fmt.input;
+  if (toolId === "word-to-pdf") {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === "doc") inputFormat = "doc";
+  }
+
+  if (onProgress) onProgress(currentLang === "ku" ? "پەیوەندیکردن بە CloudConvert..." : "Connecting to CloudConvert API...");
+
+  const jobPayload = {
+    tasks: {
+      "import-upload": {
+        operation: "import/upload"
+      },
+      "convert-task": {
+        operation: "convert",
+        input: "import-upload",
+        input_format: inputFormat,
+        output_format: fmt.output
+      },
+      "export-url": {
+        operation: "export/url",
+        input: "convert-task"
+      }
+    }
+  };
+
+  const jobRes = await fetch("https://api.cloudconvert.com/v2/jobs", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${CLOUDCONVERT_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(jobPayload)
+  });
+
+  if (!jobRes.ok) {
+    console.warn("CloudConvert job request rejected:", jobRes.status);
+    return null;
+  }
+
+  const jobData = await jobRes.json();
+  const uploadTask = jobData.data && jobData.data.tasks ? jobData.data.tasks.find(t => t.name === "import-upload") : null;
+  if (!uploadTask || !uploadTask.result || !uploadTask.result.form) {
+    return null;
+  }
+
+  const form = uploadTask.result.form;
+  if (onProgress) onProgress(currentLang === "ku" ? "ئەپلۆدکردنی فایل بۆ CloudConvert..." : "Uploading file to CloudConvert...");
+
+  const uploadData = new FormData();
+  if (form.parameters) {
+    for (const key in form.parameters) {
+      uploadData.append(key, form.parameters[key]);
+    }
+  }
+  uploadData.append("file", file);
+
+  const uploadRes = await fetch(form.url, {
+    method: "POST",
+    body: uploadData
+  });
+
+  if (!uploadRes.ok && uploadRes.status !== 201 && uploadRes.status !== 200 && uploadRes.status !== 204) {
+    console.warn("CloudConvert file upload failed:", uploadRes.status);
+    return null;
+  }
+
+  const jobId = jobData.data.id;
+  if (onProgress) onProgress(currentLang === "ku" ? "گۆڕینی فایل بە بەرزترین کوالێتی..." : "Converting file with CloudConvert...");
+
+  const waitRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}/wait`, {
+    headers: {
+      "Authorization": `Bearer ${CLOUDCONVERT_API_KEY}`
+    }
+  });
+
+  if (!waitRes.ok) {
+    return null;
+  }
+
+  const finishedJob = await waitRes.json();
+  const exportTask = finishedJob.data && finishedJob.data.tasks ? finishedJob.data.tasks.find(t => t.name === "export-url") : null;
+  if (!exportTask || !exportTask.result || !exportTask.result.files || exportTask.result.files.length === 0) {
+    return null;
+  }
+
+  const fileUrl = exportTask.result.files[0].url;
+  const fileName = exportTask.result.files[0].filename || `${file.name.replace(/\.[^/.]+$/, "")}.${fmt.output}`;
+
+  const fileRes = await fetch(fileUrl);
+  if (!fileRes.ok) {
+    return null;
+  }
+  const blob = await fileRes.blob();
+  return { blob, filename: fileName };
 }
 
 // Client-Side Conversion Engine for Cloudflare Pages / Offline
