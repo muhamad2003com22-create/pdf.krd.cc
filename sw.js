@@ -1,5 +1,5 @@
 // PDF.KRD Service Worker for WebApp / PWA
-const CACHE_NAME = 'pdf-krd-v1';
+const CACHE_NAME = 'pdf-krd-v6';
 const ASSETS_TO_CACHE = [
   './',
   'css/style.css',
@@ -7,7 +7,11 @@ const ASSETS_TO_CACHE = [
   'manifest.json',
   'images/logo.png',
   'images/icon-192.png',
-  'images/icon-512.png'
+  'images/icon-512.png',
+  'libs/pdf.min.js',
+  'libs/jspdf.umd.min.js',
+  'libs/jszip.min.js',
+  'libs/mammoth.browser.min.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -39,9 +43,16 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
+  // Network-first with cache fallback for fresh updates on deploy
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

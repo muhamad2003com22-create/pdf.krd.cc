@@ -622,35 +622,249 @@ async function convertClientSide(toolId, files) {
   }
 
   // 5. Word to PDF
-  if (toolId === "word-to-pdf" && window.mammoth) {
-    const arrayBuffer = await file.arrayBuffer();
-    const res = await window.mammoth.convertToHtml({ arrayBuffer });
-    const jsPdfLib = window.jspdf ? window.jspdf.jsPDF : null;
-    if (jsPdfLib) {
-      const doc = new jsPdfLib();
-      doc.text(res.value.replace(/<[^>]*>?/gm, ""), 15, 20);
-      return { blob: doc.output("blob"), filename: `${baseName}.pdf` };
+  if (toolId === "word-to-pdf") {
+    if (!window.mammoth) {
+      throw new Error(currentLang === "ku" ? "کتێبخانەی خوێندنەوەی Word بەردەست نییە" : "Word library not loaded");
     }
+    if (file.name.toLowerCase().endsWith(".doc") && !file.name.toLowerCase().endsWith(".docx")) {
+      throw new Error(currentLang === "ku" ? "تکایە فایلی نوێی Word (.docx) بەکاربهێنە. فۆرماتی کۆنی .doc پشتگیری ناکرێت." : "Please use a modern .docx file. Legacy .doc format is not supported.");
+    }
+
+    let text = "";
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const rawResult = await window.mammoth.extractRawText({ arrayBuffer });
+      text = rawResult.value || "";
+
+      if (!text.trim()) {
+        const htmlResult = await window.mammoth.convertToHtml({ arrayBuffer });
+        const tmp = document.createElement("div");
+        tmp.innerHTML = htmlResult.value || "";
+        text = tmp.textContent || tmp.innerText || "";
+      }
+    } catch (e) {
+      console.warn("Word extract error:", e);
+      throw new Error(currentLang === "ku" ? "نەتوانرا فایلی Word بخوێندرێتەوە. دڵنیابە فایلەکەت .docx ـە و تێک نەچووە." : "Failed to read Word file. Please verify it is a valid .docx file.");
+    }
+
+    const paragraphs = text.split(/\r?\n/).map(p => p.trim()).filter(p => p.length > 0);
+    if (paragraphs.length === 0) {
+      paragraphs.push(currentLang === "ku" ? "ئەم بەڵگەنامەیە هیچ دەقێکی تێدا نییە." : "The document is empty or contains only non-extractable elements.");
+    }
+
+    const docBlob = await renderWordTextToPdf(paragraphs, baseName);
+    return { blob: docBlob, filename: `${baseName}.pdf` };
   }
 
   // 6. PDF to Word
-  if (toolId === "pdf-to-word" && window.pdfjsLib) {
-    const workerPath = window.location.pathname.includes('/static') ? '/static/libs/pdf.worker.min.js' : 'libs/pdf.worker.min.js';
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+  if (toolId === "pdf-to-word") {
+    if (!window.pdfjsLib) {
+      throw new Error(currentLang === "ku" ? "کتێبخانەی خوێندنەوەی PDF بەردەست نییە" : "PDF library not loaded");
+    }
+    try {
+      const workerUrl = new URL('libs/pdf.worker.min.js', window.location.href).href;
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    } catch (e) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
+    }
+
     const buffer = await file.arrayBuffer();
     const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
-    let fullText = "";
+    const allParagraphs = [];
+
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(" ");
-      fullText += pageText + "\n\n";
+      
+      const linesMap = new Map();
+      for (const item of textContent.items) {
+        if (!item.str || !item.str.trim()) continue;
+        const y = Math.round(item.transform[5] / 4) * 4;
+        if (!linesMap.has(y)) linesMap.set(y, []);
+        linesMap.get(y).push(item);
+      }
+
+      const sortedY = Array.from(linesMap.keys()).sort((a, b) => b - a);
+      for (const y of sortedY) {
+        const items = linesMap.get(y);
+        items.sort((a, b) => a.transform[4] - b.transform[4]);
+        const lineStr = items.map(it => it.str).join(" ").trim();
+        if (lineStr) {
+          allParagraphs.push(lineStr);
+        }
+      }
     }
-    const blob = new Blob([fullText], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-    return { blob, filename: `${baseName}.docx` };
+
+    if (allParagraphs.length === 0) {
+      allParagraphs.push(currentLang === "ku" ? "ئەم فایلە تەنها وێنەی تێدایە (Scanned Document)." : "This PDF contains scanned images or non-selectable text.");
+    }
+
+    const docxBlob = await buildDocx(allParagraphs);
+    return { blob: docxBlob, filename: `${baseName}.docx` };
   }
 
   throw new Error("تکایە دڵنیابە لە دروستی فایلەکە یان هێڵی ئینتەرنێتت.");
+}
+
+// Helper: Builds an authentic, 100% valid Microsoft Word OpenXML (.docx) ZIP document
+async function buildDocx(paragraphs) {
+  if (!window.JSZip) {
+    throw new Error(currentLang === "ku" ? "کتێبخانەی دروستکردنی فایلی Word بەردەست نییە" : "JSZip library not available");
+  }
+  const zip = new window.JSZip();
+
+  const contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '</Types>';
+
+  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>';
+
+  const bodyXml = paragraphs.map(pText => {
+    const isRtl = /[\u0600-\u06FF]/.test(pText);
+    const safeText = pText
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+    const pPr = isRtl ? '<w:pPr><w:bidi/><w:jc w:val="right"/></w:pPr>' : '<w:pPr><w:jc w:val="left"/></w:pPr>';
+    const rPr = isRtl ? '<w:rPr><w:rtl/></w:rPr>' : '';
+    return `<w:p>${pPr}<w:r>${rPr}<w:t xml:space="preserve">${safeText}</w:t></w:r></w:p>`;
+  }).join("");
+
+  const docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    `<w:body>${bodyXml}` +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  zip.file("[Content_Types].xml", contentTypes);
+  zip.file("_rels/.rels", rels);
+  zip.file("word/document.xml", docXml);
+
+  return await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  });
+}
+
+// Helper: Renders Word text into a high-res, multi-page PDF with Kurdish/Arabic font shaping via Canvas
+async function renderWordTextToPdf(paragraphs, baseName) {
+  const jsPdfLib = window.jspdf ? window.jspdf.jsPDF : null;
+  if (!jsPdfLib) {
+    throw new Error(currentLang === "ku" ? "کتێبخانەی دروستکردنی PDF بەردەست نییە" : "jsPDF library not available");
+  }
+
+  const doc = new jsPdfLib({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pdfW = doc.internal.pageSize.getWidth(); // 210
+  const pdfH = doc.internal.pageSize.getHeight(); // 297
+
+  const canvasW = 1240;
+  const canvasH = 1754;
+  const marginX = 100;
+  const marginY = 120;
+  const contentW = canvasW - (marginX * 2);
+  const maxY = canvasH - marginY;
+  const lineHeight = 38;
+
+  let canvas = document.createElement("canvas");
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  let ctx = canvas.getContext("2d");
+
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+
+  function initCanvas() {
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.fillStyle = "#1A1A1A";
+    ctx.textBaseline = "top";
+  }
+
+  initCanvas();
+  let currentY = marginY;
+  let pageCount = 0;
+
+  for (const para of paragraphs) {
+    if (!para || !para.trim()) {
+      currentY += lineHeight * 0.6;
+      continue;
+    }
+
+    const isRtl = /[\u0600-\u06FF]/.test(para);
+    ctx.font = isRtl 
+      ? '22px "Vazirmatn", "Segoe UI", Arial, sans-serif' 
+      : '20px "Inter", -apple-system, "Segoe UI", Arial, sans-serif';
+    ctx.direction = isRtl ? "rtl" : "ltr";
+    ctx.textAlign = isRtl ? "right" : "left";
+    const drawX = isRtl ? (canvasW - marginX) : marginX;
+
+    const words = para.split(/\s+/);
+    let currentLine = "";
+
+    for (let w = 0; w < words.length; w++) {
+      const testLine = currentLine ? (currentLine + " " + words[w]) : words[w];
+      const metrics = ctx.measureText(testLine);
+
+      if (metrics.width > contentW && currentLine) {
+        if (currentY + lineHeight > maxY) {
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+          if (pageCount > 0) doc.addPage();
+          doc.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+          pageCount++;
+
+          initCanvas();
+          currentY = marginY;
+          ctx.font = isRtl 
+            ? '22px "Vazirmatn", "Segoe UI", Arial, sans-serif' 
+            : '20px "Inter", -apple-system, "Segoe UI", Arial, sans-serif';
+          ctx.direction = isRtl ? "rtl" : "ltr";
+          ctx.textAlign = isRtl ? "right" : "left";
+        }
+
+        ctx.fillText(currentLine, drawX, currentY);
+        currentY += lineHeight;
+        currentLine = words[w];
+      } else {
+        currentLine = testLine;
+      }
+    }
+
+    if (currentLine) {
+      if (currentY + lineHeight > maxY) {
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        if (pageCount > 0) doc.addPage();
+        doc.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+        pageCount++;
+
+        initCanvas();
+        currentY = marginY;
+        ctx.font = isRtl 
+          ? '22px "Vazirmatn", "Segoe UI", Arial, sans-serif' 
+          : '20px "Inter", -apple-system, "Segoe UI", Arial, sans-serif';
+        ctx.direction = isRtl ? "rtl" : "ltr";
+        ctx.textAlign = isRtl ? "right" : "left";
+      }
+
+      ctx.fillText(currentLine, drawX, currentY);
+      currentY += lineHeight + 12;
+    }
+  }
+
+  // Output last page
+  const finalData = canvas.toDataURL("image/jpeg", 0.95);
+  if (pageCount > 0) doc.addPage();
+  doc.addImage(finalData, "JPEG", 0, 0, pdfW, pdfH);
+
+  return doc.output("blob");
 }
 
 function convertImageToFormat(file, mime, quality = 0.92, whiteBg = false) {
