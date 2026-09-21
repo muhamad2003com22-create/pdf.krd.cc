@@ -687,8 +687,14 @@ async function convertClientSide(toolId, files) {
       const sortedY = Array.from(linesMap.keys()).sort((a, b) => b - a);
       for (const y of sortedY) {
         const items = linesMap.get(y);
-        items.sort((a, b) => a.transform[4] - b.transform[4]);
-        const lineStr = items.map(it => it.str).join(" ").trim();
+        // Only sort by X ascending for non-RTL lines (tables/columns in English).
+        // RTL lines must preserve stream reading order!
+        const hasRtl = items.some(it => /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(it.str));
+        if (!hasRtl) {
+          items.sort((a, b) => a.transform[4] - b.transform[4]);
+        }
+        let lineStr = items.map(it => it.str).join(" ").trim();
+        lineStr = cleanKurdishText(lineStr);
         if (lineStr) {
           allParagraphs.push(lineStr);
         }
@@ -704,6 +710,43 @@ async function convertClientSide(toolId, files) {
   }
 
   throw new Error("تکایە دڵنیابە لە دروستی فایلەکە یان هێڵی ئینتەرنێتت.");
+}
+
+// Master Kurdish Normalizer & Font Fixer: cleans Ali-K fonts, presentation forms, inverted Lam-Alef, and diacritics
+function cleanKurdishText(text) {
+  if (!text) return "";
+  try {
+    text = text.normalize("NFKC");
+  } catch (e) {}
+
+  // Remove spaces between characters and attached marks/hamzas
+  text = text.replace(/(\S)\s+([ٴ\u0654\u0674\u064B-\u065F\u0670])/g, "$1$2");
+  text = text.replace(/([ٴ\u0654\u0674\u064B-\u065F\u0670])\s+(\S)/g, "$1$2");
+
+  // Ali-K & legacy Kurdish font glyph combinations
+  text = text.replace(/لا[ٴ\u0674\u0654ًَآ]/g, "ڵا");
+  text = text.replace(/ل[ٴ\u0674\u0654ًَأ]/g, "ڵ");
+  text = text.replace(/ة[ٴ\u0674\u0654]?/g, "ە");
+  text = text.replace(/[يیى][ٴ\u0674\u0654َ]/g, "ێ");
+  text = text.replace(/ر[ٴ\u0674\u0654ِ]/g, "ڕ");
+  text = text.replace(/و[ٴ\u0674\u0654َ]|ؤ/g, "ۆ");
+  text = text.replace(/ز[ٴ\u0674\u0654]/g, "ژ");
+  text = text.replace(/ك[ٴ\u0674\u0654]|ک[ٴ\u0674\u0654]/g, "گ");
+  text = text.replace(/ج[ٴ\u0674\u0654]/g, "چ");
+  text = text.replace(/ب[ٴ\u0674\u0654]/g, "پ");
+  text = text.replace(/ف[ٴ\u0674\u0654]/g, "ڤ");
+
+  // Inverted Lam-Alef fix: CMap PDF reversal of لا -> ال before Kurdish letters
+  text = text.replace(/(^|\s|[^\u0600-\u06FF])ال(?=[پبچجحخدرڕزژسشعغفڤقکگلڵمنوۆەهیێ])/g, (m, p1) => p1 + "لا");
+
+  // Standard Kurdish letter unifications
+  text = text.replace(/ي/g, "ی").replace(/ى/g, "ی").replace(/ك/g, "ک");
+
+  // Remove orphan high hamzas
+  text = text.replace(/[ٴ\u0674\u0654]/g, "");
+
+  // Collapse whitespace
+  return text.replace(/\s+/g, " ").trim();
 }
 
 // Helper: Builds an authentic, 100% valid Microsoft Word OpenXML (.docx) ZIP document
@@ -776,6 +819,11 @@ async function renderWordTextToPdf(paragraphs, baseName) {
   let canvas = document.createElement("canvas");
   canvas.width = canvasW;
   canvas.height = canvasH;
+  canvas.style.position = "fixed";
+  canvas.style.left = "-9999px";
+  canvas.style.top = "-9999px";
+  canvas.style.visibility = "hidden";
+  document.body.appendChild(canvas);
   let ctx = canvas.getContext("2d");
 
   if (document.fonts && document.fonts.ready) {
@@ -793,7 +841,8 @@ async function renderWordTextToPdf(paragraphs, baseName) {
   let currentY = marginY;
   let pageCount = 0;
 
-  for (const para of paragraphs) {
+  for (const rawPara of paragraphs) {
+    const para = cleanKurdishText(rawPara);
     if (!para || !para.trim()) {
       currentY += lineHeight * 0.6;
       continue;
@@ -863,6 +912,7 @@ async function renderWordTextToPdf(paragraphs, baseName) {
   const finalData = canvas.toDataURL("image/jpeg", 0.95);
   if (pageCount > 0) doc.addPage();
   doc.addImage(finalData, "JPEG", 0, 0, pdfW, pdfH);
+  try { canvas.remove(); } catch (e) {}
 
   return doc.output("blob");
 }
